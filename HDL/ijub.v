@@ -117,7 +117,7 @@ module ijub(
     // Everything lives in one always block to avoid multiple-driver errors.
     // Speed selection is handled via the run_enable gate rather than
     // a separate clock domain.
-    always @(posedge clk) begin
+    always @(posedge clk or posedge rst) begin
 
         // ── RESET (highest priority) ──────────────────────────────────
         // pulse_rst fires for ONE cycle on the 0→1 edge of SW[15].
