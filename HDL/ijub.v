@@ -1,3 +1,6 @@
+// TAN, SEROMA, JUELE, GERSALIA
+
+
 // ============================================================
 //  IJUB Architecture — 12-bit Accumulator Processor
 //  16 opcodes | 8-bit accumulator | 16-slot I/D SRAM
