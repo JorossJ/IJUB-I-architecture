@@ -14,7 +14,7 @@
 //  [3:0]   = browse slot address
 // ============================================================
 
-module IJUB_architecture (
+module ijub(
     input  [11:0] input_block,   // DIP switches [11:0]  — instruction input
     output reg [15:0] output_block,
     input  mode,                 // DIP switch [12]      — 0=program, 1=run
