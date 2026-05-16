@@ -1,3 +1,4 @@
+// ============================================================
 //  IJUB Architecture — 12-bit Accumulator Processor
 //  16 opcodes | 8-bit accumulator | 16-slot I/D SRAM
 // ============================================================
@@ -14,47 +15,42 @@ module ijub (
     input  clk                   // 50MHz board clock
 );
 
-    // ── Clock Divider: 50MHz → 1Hz ───────────────────────────────────
+    // ── Clock Enable: 50MHz → 1Hz Pulse ──────────────────────────────
     reg [25:0] div_counter;
-    reg        clk_1hz;
+    reg        run_enable;
 
     always @(posedge clk) begin
-        if (div_counter >= 26'd24_999_999) begin
-            div_counter <= 0;
-            clk_1hz     <= ~clk_1hz;
+        // Generate a 1-cycle enable pulse every 50,000,000 ticks (1Hz)
+        if (div_counter >= 26'd49_999_999) begin
+            div_counter <= 26'd0;
+            run_enable  <= 1'b1;
         end else begin
-            div_counter <= div_counter + 1;
+            div_counter <= div_counter + 26'd1;
+            run_enable  <= 1'b0;
         end
     end
-
-    wire clk_selected = speed ? clk_1hz : clk;
 
     // ── Switch/Button Conditioning ───────────────────────────────────
     wire clean_save, pulse_save;
     wire clean_rst,  pulse_rst;
-    
     wire clean_next, pulse_next;
     wire clean_prev, pulse_prev;
 
-    // save: debounce + edge detect
     debouncer #(.STABLE_COUNT(500000)) u_deb_save (
         .clk(clk), .noisy(save), .clean(clean_save)
     );
     edge_detector u_edg_save (.clk(clk), .sw(clean_save),  .btn_pulse(pulse_save));
 
-    // rst: debounce + edge detect
     debouncer #(.STABLE_COUNT(500000)) u_deb_rst (
         .clk(clk), .noisy(rst), .clean(clean_rst)
     );
     edge_detector u_edg_rst (.clk(clk), .sw(clean_rst),  .btn_pulse(pulse_rst));
 
-    // browse_next: debounced + edge detect
     debouncer #(.STABLE_COUNT(500000)) u_deb_next (
         .clk(clk), .noisy(browse_next), .clean(clean_next)
     );
     edge_detector u_edg_next (.clk(clk), .sw(clean_next), .btn_pulse(pulse_next));
 
-    // browse_prev: debounced + edge detect
     debouncer #(.STABLE_COUNT(500000)) u_deb_prev (
         .clk(clk), .noisy(browse_prev), .clean(clean_prev)
     );
@@ -86,56 +82,52 @@ module ijub (
     wire [8:0] add_result = {1'b0, w_reg} + {1'b0, current_operand};
     wire [8:0] sub_result = {1'b0, w_reg} - {1'b0, current_operand};
 
-    // ── Program Mode (runs on base 50MHz clock) ───────────────────────
+    // ── Unified Core Logic (Single Always Block) ─────────────────────
     always @(posedge clk) begin
         if (pulse_rst) begin
-            prog_address   <= 0;
-            browse_address <= 0;
+            // Highest Priority: Reset everything
+            prog_address   <= 4'd0;
+            browse_address <= 4'd0;
+            pc             <= 4'd0;
+            w_reg          <= 8'd0;
+            zf <= 0; lt <= 0; gt <= 0; cf <= 0; bf <= 0;
+            output_block   <= 16'd0;
+            
         end else if (!mode) begin
-            pc <= 0; // hold PC at reset while programming
+            // ── PROGRAM MODE ──
+            pc <= 4'd0; // hold PC at zero while programming
 
             // Write current input_block into I_SRAM at prog_address
             if (pulse_save) begin
                 I_SRAM[prog_address] <= input_block;
-                prog_address         <= prog_address + 1;
+                prog_address         <= prog_address + 4'd1;
             end
 
             // Scroll browse pointer forward/backward
-            if (pulse_next) browse_address <= browse_address + 1;
-            if (pulse_prev) browse_address <= browse_address - 1;
+            if (pulse_next) browse_address <= browse_address + 4'd1;
+            if (pulse_prev) browse_address <= browse_address - 4'd1;
 
-            // Always display: instruction at browse slot + its address
+            // Display: instruction at browse slot + its address
             output_block <= {I_SRAM[browse_address], browse_address};
-        end
-    end
 
-    // ── Run Mode (runs on clk_selected — 50MHz or 1Hz) ───────────────
-    always @(posedge clk_selected) begin
-        if (clean_rst) begin
-            pc    <= 0;
-            w_reg <= 0;
-            zf    <= 0; 
-            lt    <= 0; 
-            gt    <= 0; 
-            cf    <= 0; 
-            bf    <= 0;
-        end else if (mode) begin
+        end else if (speed == 0 || run_enable) begin
+            // ── RUN MODE ──
+            // Executes every cycle if speed=0 (50MHz), or once per pulse if speed=1 (1Hz)
+            
+            pc <= pc + 4'd1; // default: advance to next instruction
+
             case (current_op)
                 4'd0: begin
-                    // NOP — do nothing, advance PC
-                    pc <= pc + 1;
+                    // NOP
                 end
                 4'd1: begin
                     w_reg <= current_operand;
-                    pc    <= pc + 1;
                 end
                 4'd2: begin
                     w_reg <= D_SRAM[current_operand[3:0]];
-                    pc    <= pc + 1;
                 end
                 4'd3: begin
                     D_SRAM[current_operand[3:0]] <= w_reg;
-                    pc    <= pc + 1;
                 end
                 4'd4: begin
                     if (w_reg == current_operand) begin
@@ -145,57 +137,44 @@ module ijub (
                     end else begin
                         zf <= 0; lt <= 0; gt <= 1;
                     end
-                    pc <= pc + 1;
                 end
                 4'd5: begin
-                    // JMP: Unconditional branch to target address
                     pc <= current_operand[3:0];
                 end
                 4'd6: begin
-                    // JZ: Jump to address if Zero, else step forward
-                    pc <= zf ? current_operand[3:0] : pc + 1;
+                    if (zf) pc <= pc + 4'd2;
                 end
                 4'd7: begin
-                    // JLT: Jump to address if Less Than, else step forward
-                    pc <= lt ? current_operand[3:0] : pc + 1;
+                    if (lt) pc <= pc + 4'd2;
                 end
                 4'd8: begin
-                    // JGT: Jump to address if Greater Than, else step forward
-                    pc <= gt ? current_operand[3:0] : pc + 1;
+                    if (gt) pc <= pc + 4'd2;
                 end
                 4'd9: begin
                     w_reg <= add_result[7:0];
                     cf    <= add_result[8];
-                    pc    <= pc + 1;
                 end
                 4'd10: begin
                     w_reg <= sub_result[7:0];
                     bf    <= sub_result[8];
-                    pc    <= pc + 1;
                 end
                 4'd11: begin
                     w_reg <= w_reg & current_operand;
-                    pc    <= pc + 1;
                 end
                 4'd12: begin
                     w_reg <= w_reg | current_operand;
-                    pc    <= pc + 1;
                 end
                 4'd13: begin
                     w_reg <= ~w_reg;
-                    pc    <= pc + 1;
                 end
                 4'd14: begin
                     w_reg <= w_reg ^ current_operand;
-                    pc    <= pc + 1;
                 end
                 4'd15: begin
                     output_block <= {cf, bf, gt, lt, zf, 3'b000, w_reg};
-                    pc           <= pc + 1;
                 end
                 default: begin
-                    // Unrecognized opcode safely advances to avoid permanent lockup
-                    pc <= pc + 1;
+                    // unrecognized opcode — do nothing
                 end
             endcase
         end
