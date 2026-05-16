@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>IJUB Architecture — Documentation</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --sidebar-w: 240px;
+    --accent: #0066cc;
+    --accent-light: #e8f0fb;
+    --red: #d63940;
+    --green: #0a7c40;
+    --purple: #6a4fcf;
+    --border: #e0e0e0;
+    --bg: #fff;
+    --sidebar-bg: #f9f9fb;
+    --text: #1a1a1a;
+    --muted: #666;
+    --code-bg: #f6f8fa;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Inter', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--text);
+    background: var(--bg);
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ── Sidebar ── */
+  nav {
+    width: var(--sidebar-w);
+    min-width: var(--sidebar-w);
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border);
+    padding: 24px 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+
+  .nav-logo {
+    padding: 0 20px 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  .nav-logo-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+
+  .nav-logo-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .nav-group { margin-bottom: 8px; }
+
+  .nav-group-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    padding: 6px 20px 4px;
+  }
+
+  nav a {
+    display: block;
+    padding: 5px 20px;
+    font-size: 13px;
+    color: var(--text);
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    transition: all 0.1s;
+  }
+
+  nav a:hover { color: var(--accent); background: #f0f4ff; border-left-color: var(--accent); }
+
+  /* ── Main ── */
+  main {
+    flex: 1;
+    max-width: 820px;
+    padding: 48px 56px 100px;
+    min-width: 0;
+  }
+
+  /* ── Page title ── */
+  .page-title {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 20px;
+    margin-bottom: 36px;
+  }
+
+  .page-title h1 {
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+
+  .page-title p {
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  /* ── Sections ── */
+  section {
+    margin-bottom: 56px;
+    scroll-margin-top: 24px;
+  }
+
+  section h2 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  section h3 {
+    font-size: 17px;
+    font-weight: 600;
+    margin: 28px 0 10px;
+    color: var(--text);
+  }
+
+  p { color: #333; margin-bottom: 14px; }
+  p:last-child { margin-bottom: 0; }
+
+  /* ── Inline code ── */
+  code {
+    font-family: var(--mono);
+    font-size: 13px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--red);
+  }
+
+  /* ── Code block ── */
+  pre {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.75;
+    padding: 20px 24px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 16px 0;
+  }
+
+  pre .cm  { color: #6c7086; }
+  pre .kw  { color: #89b4fa; }
+  pre .num { color: #fab387; }
+  pre .str { color: #a6e3a1; }
+
+  /* ── Note / warning boxes ── */
+  .callout {
+    border-left: 4px solid;
+    padding: 12px 16px;
+    border-radius: 0 6px 6px 0;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+
+  .callout.note   { border-color: var(--accent); background: var(--accent-light); }
+  .callout.warn   { border-color: #e6a817; background: #fffbec; }
+  .callout.tip    { border-color: var(--green); background: #edfbf3; }
+
+  .callout-title {
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+
+  .callout.note .callout-title  { color: var(--accent); }
+  .callout.warn .callout-title  { color: #9a6e00; }
+  .callout.tip  .callout-title  { color: var(--green); }
+
+  /* ── Spec table (key-value) ── */
+  .spec-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin: 16px 0;
+  }
+
+  .spec-table td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  .spec-table td:first-child {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--muted);
+    width: 40%;
+    white-space: nowrap;
+  }
+
+  .spec-table td:last-child { font-weight: 500; }
+  .spec-table tr:last-child td { border-bottom: none; }
+
+  /* ── Hardware map table ── */
+  .hw-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin: 16px 0;
+  }
+
+  .hw-table th {
+    text-align: left;
+    padding: 8px 14px;
+    background: var(--code-bg);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    border-bottom: 2px solid var(--border);
+  }
+
+  .hw-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: top;
+  }
+
+  .hw-table tr:last-child td { border-bottom: none; }
+  .hw-table tr:hover td { background: #fafafa; }
+
+  .hw-table td:first-child {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--red);
+    white-space: nowrap;
+    width: 100px;
+  }
+
+  .hw-table td:nth-child(2) {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--purple);
+    width: 130px;
+  }
+
+  /* ── Instruction reference ── */
+  .instr-list { margin: 0; padding: 0; list-style: none; }
+
+  .instr-item {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+
+  .instr-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--code-bg);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+
+  .instr-opcode {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    background: #e8e8e8;
+    padding: 2px 7px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+
+  .instr-mnemonic {
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--accent);
+  }
+
+  .instr-name {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .instr-body { padding: 14px 16px; }
+
+  .instr-desc { font-size: 14px; color: #333; margin-bottom: 10px; }
+
+  .instr-syntax {
+    font-family: var(--mono);
+    font-size: 13px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    border-radius: 5px;
+    color: var(--purple);
+    margin-bottom: 10px;
+  }
+
+  .instr-flags {
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .flag-tag {
+    background: #fff3cd;
+    border: 1px solid #f0d060;
+    color: #7a5c00;
+    padding: 1px 7px;
+    border-radius: 3px;
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+
+  .flag-tag.none { background: #f5f5f5; border-color: #ddd; color: #999; }
+
+  /* ── Bit diagram ── */
+  .bit-diagram {
+    display: flex;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    font-family: var(--mono);
+    margin: 16px 0;
+  }
+
+  .bit-cell {
+    flex: 1;
+    text-align: center;
+    border-right: 1px solid var(--border);
+  }
+
+  .bit-cell:last-child { border-right: none; }
+  .bit-cell.wide { flex: 8; }
+  .bit-cell.med  { flex: 4; }
+
+  .bit-pos {
+    background: var(--code-bg);
+    padding: 4px;
+    font-size: 10px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .bit-val {
+    padding: 10px 4px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .bit-cell.opcode .bit-val { color: var(--red); }
+  .bit-cell.operand .bit-val { color: var(--accent); }
+  .bit-cell.flag .bit-val { color: #9a6e00; }
+  .bit-cell.data .bit-val { color: var(--purple); }
+  .bit-cell.zero .bit-val { color: #bbb; }
+
+  /* ── Flow steps ── */
+  .steps {
+    counter-reset: steps;
+    margin: 16px 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .steps li {
+    counter-increment: steps;
+    display: flex;
+    gap: 14px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    color: #333;
+    align-items: flex-start;
+  }
+
+  .steps li::before {
+    content: counter(steps);
+    background: var(--accent);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* ── Badge ── */
+  .badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 3px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  .badge-blue   { background: #e8f0fb; color: var(--accent); }
+  .badge-grey   { background: #f0f0f0; color: #888; }
+  .badge-green  { background: #edfbf3; color: var(--green); }
+
+  /* ── Footer ── */
+  footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  footer a { color: var(--accent); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 700px) {
+    nav { display: none; }
+    main { padding: 24px 20px 60px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-title">IJUB Architecture</div>
+    <div class="nav-logo-sub">ISA Reference v1.0</div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Getting Started</div>
+    <a href="#overview">Overview</a>
+    <a href="#hardware">Hardware Map</a>
+    <a href="#modes">Operating Modes</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Reference</div>
+    <a href="#instruction-format">Instruction Format</a>
+    <a href="#instructions">Instructions</a>
+    <a href="#flags">Flags</a>
+    <a href="#output-format">Output Format</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Guides</div>
+    <a href="#example">Example Program</a>
+    <a href="#modules">Verilog Modules</a>
+  </div>
+</nav>
+
+<!-- Main content -->
+<main>
+
+  <div class="page-title">
+    <h1>IJUB Architecture</h1>
+    <p>A 12-bit accumulator processor implemented in Verilog for the Intel Cyclone 10 LP FPGA.</p>
+  </div>
+
+  <!-- Overview -->
+  <section id="overview">
+    <h2>Overview</h2>
+    <p>IJUB is a simple custom processor you program by hand using DIP switches. You enter each instruction one at a time, save it into memory, then flip a switch to run the program.</p>
+    <p>All math and logic goes through one register called the <strong>accumulator</strong> (<code>w_reg</code>). It is 8 bits wide, so it holds values from 0 to 255.</p>
+
+    <table class="spec-table">
+      <tr><td>Instruction width</td><td>12 bits (4-bit opcode + 8-bit operand)</td></tr>
+      <tr><td>Accumulator (w_reg)</td><td>8 bits — holds values 0–255</td></tr>
+      <tr><td>Instruction memory (I_SRAM)</td><td>16 slots × 12 bits</td></tr>
+      <tr><td>Data memory (D_SRAM)</td><td>16 slots × 8 bits</td></tr>
+      <tr><td>Total instructions</td><td>16 (opcodes 0–15)</td></tr>
+      <tr><td>Clock speeds</td><td>50 MHz (full speed) or 1 Hz (one step per second)</td></tr>
+      <tr><td>Architecture</td><td>Single-cycle — every instruction finishes in one clock cycle</td></tr>
+    </table>
+  </section>
+
+  <!-- Hardware Map -->
+  <section id="hardware">
+    <h2>Hardware Map</h2>
+    <p>The processor uses all 16 DIP switches on your PCB and 2 buttons on the FPGA dev board.</p>
+
+    <h3>DIP Switches</h3>
+    <table class="hw-table">
+      <thead><tr><th>Switch</th><th>Signal</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>SW[11:0]</td>
+          <td>input_block</td>
+          <td>The 12-bit instruction you want to enter. Set the top 4 bits to the opcode and the bottom 8 bits to the operand before saving.</td>
+        </tr>
+        <tr>
+          <td>SW[12]</td>
+          <td>mode</td>
+          <td><strong>0</strong> = Program mode (enter instructions). <strong>1</strong> = Run mode (execute program).</td>
+        </tr>
+        <tr>
+          <td>SW[13]</td>
+          <td>speed</td>
+          <td><strong>0</strong> = Full speed (50 MHz). <strong>1</strong> = Slow mode (1 Hz — one instruction per second, good for debugging).</td>
+        </tr>
+        <tr>
+          <td>SW[14]</td>
+          <td>save</td>
+          <td>Flip this to write the current <code>input_block</code> into the next instruction memory slot. Each flip saves exactly one instruction.</td>
+        </tr>
+        <tr>
+          <td>SW[15]</td>
+          <td>rst</td>
+          <td>Reset. While ON, the processor holds PC, accumulator, and all flags at zero. Also resets the program write pointer and browse pointer.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>FPGA Dev Board Buttons</h3>
+    <table class="hw-table">
+      <thead><tr><th>Button</th><th>Signal</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>BTN0</td>
+          <td>browse_next</td>
+          <td>In program mode: move the browse pointer forward. The LEDs show the instruction stored at that slot and its address.</td>
+        </tr>
+        <tr>
+          <td>BTN1</td>
+          <td>browse_prev</td>
+          <td>In program mode: move the browse pointer backward.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>LEDs</h3>
+    <p>All 16 LEDs are driven by <code>output_block</code>. In program mode they show the browsed instruction slot. In run mode they update when the <code>OUT</code> instruction executes. See <a href="#output-format">Output Format</a> for the bit layout.</p>
+  </section>
+
+  <!-- Operating Modes -->
+  <section id="modes">
+    <h2>Operating Modes</h2>
+
+    <h3>Program Mode <span class="badge badge-grey">SW[12] = 0</span></h3>
+    <p>Use this mode to load your program into instruction memory. The processor is paused — the program counter is held at 0 and nothing executes.</p>
+
+    <p><strong>To enter an instruction:</strong></p>
+    <ol class="steps">
+      <li>Set <strong>SW[11:8]</strong> to the 4-bit opcode of the instruction you want.</li>
+      <li>Set <strong>SW[7:0]</strong> to the 8-bit operand.</li>
+      <li>Flip <strong>SW[14]</strong> (save). The instruction is written to the current slot and the write pointer advances automatically.</li>
+      <li>Repeat for the next instruction.</li>
+    </ol>
+
+    <p><strong>To read back what you stored:</strong> Press BTN0 or BTN1 to scroll through slots. The LEDs show the instruction at the current browse position and its address.</p>
+
+    <div class="callout note">
+      <div class="callout-title">Note</div>
+      The save switch goes through a 10ms debounce filter and an edge detector, so each flip writes exactly one instruction — no matter how long you hold it.
+    </div>
+
+    <h3>Run Mode <span class="badge badge-blue">SW[12] = 1</span></h3>
+    <p>The processor fetches and executes instructions from memory starting at address 0. The program counter (PC) advances by 1 each cycle by default. Jump instructions change this.</p>
+
+    <ol class="steps">
+      <li>The processor reads the instruction at <code>I_SRAM[pc]</code>.</li>
+      <li>It decodes the opcode (top 4 bits) and operand (bottom 8 bits).</li>
+      <li>It executes the instruction and updates PC.</li>
+      <li>Repeat from step 1.</li>
+    </ol>
+
+    <div class="callout tip">
+      <div class="callout-title">Tip</div>
+      Set SW[13] = 1 to run at 1 Hz while debugging. You can watch each instruction execute one at a time on the LEDs.
+    </div>
+
+    <h3>Reset <span class="badge badge-grey">SW[15]</span></h3>
+    <p>Flip SW[15] ON at any time to reset the processor. While it is ON:</p>
+    <ul style="margin: 8px 0 0 20px; font-size:14px; color:#333; line-height:2;">
+      <li>PC is held at 0</li>
+      <li>The accumulator (<code>w_reg</code>) is cleared to 0</li>
+      <li>All flags are cleared</li>
+      <li>The write pointer and browse pointer reset to slot 0</li>
+    </ul>
+    <p style="margin-top:12px;">Flip it back OFF to resume normally.</p>
+  </section>
+
+  <!-- Instruction Format -->
+  <section id="instruction-format">
+    <h2>Instruction Format</h2>
+    <p>Every instruction is 12 bits wide and is split into two parts:</p>
+
+    <div class="bit-diagram">
+      <div class="bit-cell opcode med">
+        <div class="bit-pos">Bits [11:8]</div>
+        <div class="bit-val">OPCODE (4 bits)</div>
+      </div>
+      <div class="bit-cell operand wide">
+        <div class="bit-pos">Bits [7:0]</div>
+        <div class="bit-val">OPERAND (8 bits)</div>
+      </div>
+    </div>
+
+    <p>The <strong>opcode</strong> selects which operation to run (0–15). The <strong>operand</strong> is the value or address the instruction uses. For memory-addressing instructions, only the lower 4 bits of the operand are used as the address (<code>operand[3:0]</code>), since both memories only have 16 slots.</p>
+
+    <div class="callout note">
+      <div class="callout-title">Example</div>
+      To encode <strong>LDI 10</strong> (load the value 10 into the accumulator): opcode = <code>0001</code> (1 in binary), operand = <code>00001010</code> (10 in binary). Full 12-bit instruction = <code>0001_0000_1010</code>. Set SW[11:8] = <code>0001</code>, SW[7:0] = <code>00001010</code>.
+    </div>
+  </section>
+
+  <!-- Instructions -->
+  <section id="instructions">
+    <h2>Instructions</h2>
+    <p>There are 16 instructions total. The accumulator is referred to as <code>w_reg</code> throughout.</p>
+
+    <ul class="instr-list">
+
+      <li class="instr-item">
+        <div class="instr-header">
+          <span class="instr-opcode">opcode 0</span>
+          <span class="instr-mnemonic">NOP</span>
+          <span class="instr-name">No Operation</span>
+        </div>
+        <div class="instr-body">
+          <p class="instr-desc">Does nothing. The processor simply advances to the next instruction. Useful as a placeholder or timing gap.</p>
+          <div class="instr-syntax">— (operand ignored)</div>
+          <div class="instr-flags"><span style="font-size:12px;color:var(--muted);">Flags affected:</span> <span class="flag-tag none">none</span></div>
+        </div>
+      </li>
+
+      <li class="instr-item">
+        <div class="instr-header">
+          <span class="instr-opcode">opcode 1</span>
+          <span class="instr-mnemonic">LDI</span>
+          <span class="instr-name">Load Immediate</span>
+        </div>
+        <div class="instr-body">
+          <p class="instr-desc">Loads a number directly into the accumulator. The number comes from the operand field of the instruction.</p>
+          <div class="instr-syntax">w_reg ← operand</div>
+          <div class="instr-flags"><span style="font-size:12px;color:var(--muted);">Flags affected:</span> <span class="flag-tag none">none</span></div>
+        </div>
+      </li>
+
+      <li class="instr-item">
+        <div class="instr-header">
+          <span class="instr-opcode">opcode 2</span>
+          <span class="instr-mnemonic">LD</span>
+          <span class="instr-name">Load from Memory</span>
+        </div>
+        <div class="instr-body">
+          <p class="instr-desc">Reads a value from data memory (D_SRAM) at the given address and puts it in the accumulator.</p>
+          <div class="instr-syntax">w_reg ← D_SRAM[operand[3:0]]</div>
+          <div class="instr-flags"><span style="font-size:12px;color:var(--muted);">Flags affected:</span> <span class="flag-tag none">none</span></div>
+        </div>
+      </li>
+
+      <li class="instr-item">
+        <div class="instr-header">
+          <span class="instr-opcode">opcode 3</span>
+          <span class="instr-mnemonic">ST</span>
+          <span class="instr-name">Store to Memory</span>
+        </div>
+        <div class="instr-body">
+          <p class="instr-desc">Writes the accumulator's current value into data memory at the given address.</p>
+          <div class="instr-syntax">D_SRAM[operand[3:0]] ← w_reg</div>
+          <div class="instr-flags"><span style="font-size:12px;color:var(--muted);">Flags affected:</span> <span class="flag-tag none">none</span></div>
+        </div>
+      </li>
+
+      <li class="instr-item">
+        <div class="instr-header">
+          <span class="instr-opcode">opcode 4</span>
+          <span class="instr-mnemonic">CMP</span>
+          <span class="instr-name">Compare</span>
+        </div>
+        <div class="instr-body">
+          <p class="instr-desc">Compares the accumulator with the operand and sets the flags accordingly. Does <strong>not</strong> change the accumulator. Use this before a conditional jump (JZ, JLT, JGT).</p>
+          <div class="instr-syntax">compare w_reg with operand → set zf, lt, gt</div>
+          <div class="instr-flags">
+            <span style="font-size:12px;color:var(--muted);">Flags affected:</span>
+            <span class="flag-tag">zf</span>
+            <span class="flag-tag">lt</span>
+            <span class="flag-tag">gt</span>
+          </div>
+        </div>
+      </li>
+
+      <li class="instr-item">
+        <div class="instr-header">
+          <span class="instr-opcode">opcode 5</span>
+          <span class="instr-mnemonic">JMP</span>
+          <span class="instr-name">Jump (Unconditional)</span>
+        </div>
+        <div class="instr-body">
+          <p class="instr-desc">Jumps to a specific instruction slot, always. The address comes from the lower 4 bits of the operand. Use this to create loops.</p>
+          <div class="instr-syntax">pc ← operand[3:0]</div>
+          <div class="instr-flags"><span style="font-size:12px;color:var(--muted);">Flags affected:</span> <span class="flag-tag none">none</span></div>
+        </div>
+      </li>
+
+      <li class="instr-item">
+        <div class="instr-header">
+          <span class="instr-opcode">opcode 6</span>
+          <span class="instr-mnemonic">JZ</span>
+          <span class="instr-name">Jump if Zero</span>
+        </div>
+        <div class="instr-body">
+          <p class="instr-desc">Jumps to the target address only if the zero flag (<code>zf</code>) is set — meaning the last CMP found the accumulator equal to the operand. Otherwise, advances normally.</p>
+          <div class="instr-syntax">pc ← (zf == 1) ? operand[3:0] : pc + 1</div>
+          <div class="instr-flags"><span style="font-size:12px;color:var(--muted);">Flags affected:</span> <span class="flag-tag none">none</span></div>
+        </div>
+      </li>
+
+      <li class="instr-item">
+        <div class="instr-header">
+          <span class="instr-opcode">opcode 7</span>
+          <span class="instr-mnemonic">JLT</span>
+          <span class="instr-name">Jump if Less Than</span>
+        </div>
+        <div class="instr-body">
+          <p class="instr-desc">Jumps to the target address only if the less-than flag (<code>lt</code>) is set — meaning the last CMP found the accumulator less than the operand. Otherwise, advances normally.</p>
+          <div class="instr-syntax">pc ← (lt == 1) ? operand[3:0] : pc + 1</div>
+          <div class="instr-flags"><span style="font-size:12px;color:var(--muted);">Flags affected:</span> <span class="flag-tag none">none</span></div>
+        </div>
+      </li>
+
+      <li class="instr-item">
+        <div class="instr-header">
+          <span class="instr-opcode">opcode 8</span>
+          <span class="instr-mnemonic">JGT</span>
+          <span class="instr-name">Jump if Greater Than</span>
+        </div>
+        <div class="instr-body">
+          <p class="instr-desc">Jumps to the target address only if the greater-than flag (<code>gt</code>) is set — meaning the last CMP found the accumulator greater than the operand. Otherwise, advances normally.</p>
+          <div class="instr-syntax">pc ← (gt == 1) ? operand[3:0] : pc + 1</div>
+          <div class="instr-flags"><span style="font-size:12px;color:var(--muted);">Flags affected:</span> <span class="flag-tag none">none</span></div>
+        </div>
+      </li>
+
+      <li class="instr-item">
+        <div class="instr-header">
+          <span class="instr-opcode">opcode 9</span>
+          <span class="instr-mnemonic">ADD</span>
+          <span class="instr-name">Add</span>
+        </div>
+        <div class="instr-body">
+          <p class="instr-desc">Adds the operand to the accumulator and stores the result back in the accumulator. If the result exceeds 255, it wraps around and the carry flag is set.</p>
+          <div class="instr-syntax">w_reg ← w_reg + operand</div>
+          <div class="instr-flags"><span style="font-size:12px;color:var(--muted);">Flags affected:</span> <span class="flag-tag">cf</span></div>
+        </div>
+      </li>
+
+      <li class="instr-item">
+        <div class="instr-header">
+          <span class="instr-opcode">opcode 10</span>
+          <span class="instr-mnemonic">SUB</span>
+          <span class="instr-name">Subtract</span>
+        </div>
+        <div class="instr-body">
+          <p class="instr-desc">Subtracts the operand from the accumulator. If the result goes below 0, it wraps around and the borrow flag is set.</p>
+          <div class="instr-syntax">w_reg ← w_reg − operand</div>
+          <div class="instr-flags"><span style="font-size:12px;color:var(--muted);">Flags affected:</span> <span class="flag-tag">bf</span></div>
+        </div>
+      </li>
+
+      <li class="instr-item">
+        <div class="instr-header">
+          <span class="instr-opcode">opcode 11</span>
+          <span class="instr-mnemonic">AND</span>
+          <span class="instr-name">Bitwise AND</span>
+        </div>
+        <div class="instr-body">
+          <p class="instr-desc">Performs a bitwise AND between the accumulator and the operand. Each bit of the result is 1 only if both corresponding bits were 1.</p>
+          <div class="instr-syntax">w_reg ← w_reg &amp; operand</div>
+          <div class="instr-flags"><span style="font-size:12px;color:var(--muted);">Flags affected:</span> <span class="flag-tag none">none</span></div>
+        </div>
+      </li>
+
+      <li class="instr-item">
+        <div class="instr-header">
+          <span class="instr-opcode">opcode 12</span>
+          <span class="instr-mnemonic">OR</span>
+          <span class="instr-name">Bitwise OR</span>
+        </div>
+        <div class="instr-body">
+          <p class="instr-desc">Performs a bitwise OR between the accumulator and the operand. Each bit of the result is 1 if either corresponding bit was 1.</p>
+          <div class="instr-syntax">w_reg ← w_reg | operand</div>
+          <div class="instr-flags"><span style="font-size:12px;color:var(--muted);">Flags affected:</span> <span class="flag-tag none">none</span></div>
+        </div>
+      </li>
+
+      <li class="instr-item">
+        <div class="instr-header">
+          <span class="instr-opcode">opcode 13</span>
+          <span class="instr-mnemonic">NOT</span>
+          <span class="instr-name">Bitwise NOT</span>
+        </div>
+        <div class="instr-body">
+          <p class="instr-desc">Flips every bit in the accumulator. 0s become 1s and 1s become 0s. The operand is ignored.</p>
+          <div class="instr-syntax">w_reg ← ~w_reg</div>
+          <div class="instr-flags"><span style="font-size:12px;color:var(--muted);">Flags affected:</span> <span class="flag-tag none">none</span></div>
+        </div>
+      </li>
+
+      <li class="instr-item">
+        <div class="instr-header">
+          <span class="instr-opcode">opcode 14</span>
+          <span class="instr-mnemonic">XOR</span>
+          <span class="instr-name">Bitwise XOR</span>
+        </div>
+        <div class="instr-body">
+          <p class="instr-desc">Performs a bitwise XOR between the accumulator and the operand. Each bit of the result is 1 if the corresponding bits were different.</p>
+          <div class="instr-syntax">w_reg ← w_reg ^ operand</div>
+          <div class="instr-flags"><span style="font-size:12px;color:var(--muted);">Flags affected:</span> <span class="flag-tag none">none</span></div>
+        </div>
+      </li>
+
+      <li class="instr-item">
+        <div class="instr-header">
+          <span class="instr-opcode">opcode 15</span>
+          <span class="instr-mnemonic">OUT</span>
+          <span class="instr-name">Output</span>
+        </div>
+        <div class="instr-body">
+          <p class="instr-desc">Sends the current accumulator value and all flags to the 16 output LEDs. This is the only way to see what the processor has computed.</p>
+          <div class="instr-syntax">output_block ← {cf, bf, gt, lt, zf, 000, w_reg}</div>
+          <div class="instr-flags"><span style="font-size:12px;color:var(--muted);">Flags affected:</span> <span class="flag-tag none">none</span></div>
+        </div>
+      </li>
+
+    </ul>
+  </section>
+
+  <!-- Flags -->
+  <section id="flags">
+    <h2>Flags</h2>
+    <p>Flags are 1-bit values that get set by certain instructions. They stay set until the next instruction that affects them. Conditional jump instructions (JZ, JLT, JGT) check these flags to decide where to go next.</p>
+
+    <table class="hw-table">
+      <thead><tr><th>Flag</th><th>Name</th><th>Set when</th><th>Used by</th></tr></thead>
+      <tbody>
+        <tr><td>zf</td><td>Zero</td><td>CMP finds <code>w_reg == operand</code></td><td>JZ</td></tr>
+        <tr><td>lt</td><td>Less Than</td><td>CMP finds <code>w_reg &lt; operand</code></td><td>JLT</td></tr>
+        <tr><td>gt</td><td>Greater Than</td><td>CMP finds <code>w_reg &gt; operand</code></td><td>JGT</td></tr>
+        <tr><td>cf</td><td>Carry</td><td>ADD result exceeds 255 (overflows)</td><td>OUT (visible on LED 15)</td></tr>
+        <tr><td>bf</td><td>Borrow</td><td>SUB result goes below 0 (underflows)</td><td>OUT (visible on LED 14)</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout warn">
+      <div class="callout-title">Important</div>
+      CMP always sets exactly one of zf, lt, or gt and clears the other two. So you never have two of them set at the same time.
+    </div>
+  </section>
+
+  <!-- Output Format -->
+  <section id="output-format">
+    <h2>Output Format</h2>
+    <p>When the <strong>OUT</strong> instruction runs, all 16 LEDs update at once. Here is what each LED means:</p>
+
+    <div class="bit-diagram">
+      <div class="bit-cell flag"><div class="bit-pos">LED 15</div><div class="bit-val">cf</div></div>
+      <div class="bit-cell flag"><div class="bit-pos">LED 14</div><div class="bit-val">bf</div></div>
+      <div class="bit-cell flag"><div class="bit-pos">LED 13</div><div class="bit-val">gt</div></div>
+      <div class="bit-cell flag"><div class="bit-pos">LED 12</div><div class="bit-val">lt</div></div>
+      <div class="bit-cell flag"><div class="bit-pos">LED 11</div><div class="bit-val">zf</div></div>
+      <div class="bit-cell zero"><div class="bit-pos">LED 10</div><div class="bit-val">0</div></div>
+      <div class="bit-cell zero"><div class="bit-pos">LED 9</div><div class="bit-val">0</div></div>
+      <div class="bit-cell zero"><div class="bit-pos">LED 8</div><div class="bit-val">0</div></div>
+      <div class="bit-cell data wide"><div class="bit-pos">LEDs [7:0]</div><div class="bit-val">w_reg — accumulator value in binary</div></div>
+    </div>
+
+    <p>LEDs 15–11 show the processor flags. LEDs 10–8 are always off (unused). LEDs 7–0 show the accumulator value in binary — LED 7 is the most significant bit.</p>
+
+    <div class="callout tip">
+      <div class="callout-title">Reading the accumulator</div>
+      LEDs 7–0 are the binary representation of <code>w_reg</code>. For example, if the accumulator holds 20 (binary <code>00010100</code>), then LED 4 and LED 2 will be ON and all others OFF.
+    </div>
+
+    <p>In <strong>program mode</strong>, the LEDs show the instruction stored at the current browse address (upper 12 bits) and the slot number (lower 4 bits).</p>
+  </section>
+
+  <!-- Example -->
+  <section id="example">
+    <h2>Example Program</h2>
+    <p>This program loads two numbers, compares them, adds one to the larger value, and outputs the result in an infinite loop.</p>
+
+<pre><span class="cm">; Slot   Opcode   Operand   What it does</span>
+<span class="cm">; ────────────────────────────────────────────────────────</span>
+<span class="num">0</span>        <span class="kw">1</span>       <span class="num"> 10</span>        <span class="cm">; LDI 10  — load 10 into accumulator</span>
+<span class="num">1</span>        <span class="kw">3</span>       <span class="num">  0</span>        <span class="cm">; ST  0   — store accumulator to D_SRAM[0]</span>
+<span class="num">2</span>        <span class="kw">1</span>       <span class="num"> 15</span>        <span class="cm">; LDI 15  — load 15 into accumulator</span>
+<span class="num">3</span>        <span class="kw">4</span>       <span class="num"> 10</span>        <span class="cm">; CMP 10  — compare 15 vs 10 → gt flag set</span>
+<span class="num">4</span>        <span class="kw">9</span>       <span class="num">  5</span>        <span class="cm">; ADD 5   — accumulator = 15 + 5 = 20</span>
+<span class="num">5</span>        <span class="kw">15</span>      <span class="num">  0</span>        <span class="cm">; OUT     — LEDs show: gt=1, w_reg=20</span>
+<span class="num">6</span>        <span class="kw">5</span>       <span class="num">  5</span>        <span class="cm">; JMP 5   — jump back to slot 5 forever</span></pre>
+
+    <p><strong>How to enter this program:</strong></p>
+    <ol class="steps">
+      <li>Set SW[12] = 0 (program mode) and SW[15] = 1 then back to 0 (reset write pointer to slot 0).</li>
+      <li>For each row in the table, set SW[11:8] to the opcode and SW[7:0] to the operand.</li>
+      <li>Flip SW[14] once to save the instruction. The write pointer advances automatically.</li>
+      <li>Repeat until all 7 instructions are entered.</li>
+      <li>Set SW[12] = 1 (run mode). The program starts from slot 0.</li>
+      <li>The LEDs will show gt=1 (LED 13 ON) and the value 20 on LEDs 7–0.</li>
+    </ol>
+
+    <div class="callout note">
+      <div class="callout-title">Encoding reminder</div>
+      Slot 0 (LDI 10): opcode = <code>0001</code>, operand = <code>00001010</code> → set SW[11:8] = <code>0001</code>, SW[7:0] = <code>00001010</code>, then flip SW[14].
+    </div>
+  </section>
+
+  <!-- Modules -->
+  <section id="modules">
+    <h2>Verilog Modules</h2>
+    <p>The design is made up of three Verilog modules:</p>
+
+    <table class="hw-table">
+      <thead><tr><th>Module</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>IJUB_architecture</td>
+          <td>The top-level processor. Contains the clock divider, all memory and registers, the program mode logic, the run mode execute loop, and instantiates the submodules below.</td>
+        </tr>
+        <tr>
+          <td>debouncer</td>
+          <td>Filters out mechanical noise from DIP switches. Waits for the signal to be stable for 500,000 clock cycles (~10ms) before passing it through. Parameterizable via <code>STABLE_COUNT</code>.</td>
+        </tr>
+        <tr>
+          <td>edge_detector</td>
+          <td>Converts a steady level signal into a single 1-cycle pulse on the rising edge. This turns a DIP switch flip or button press into a one-shot event so only one action fires per flip.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <footer>
+    <span>IJUB Architecture · ISA Reference v1.0 · Verilog HDL</span>
+    <a href="YOUR_GITHUB_LINK_HERE" target="_blank">GitHub →</a>
+  </footer>
+
+</main>
+</body>
+</html>
